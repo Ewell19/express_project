@@ -1,12 +1,23 @@
 const express = require("express");
-const app = express();
-const port = process.env.PORT || 3001;
+const mongoose = require("mongoose");
+const mainRoutes = require("./routes/index");
 
+const app = express();
+const { PORT = 3001 } = process.env;
+mongoose
+  .connect("mongodb://127.0.0.1:27017/wtwr_db")
+  .then(() => {
+    console.log("Connected to MongoDB");
+  })
+  .catch((err) => {
+    console.error("Failed to connect to MongoDB", err);
+  });
+
+app.use("/", mainRoutes);
 app.get("/", (req, res) => {
-  console.log("Received a request"); // This will trigger a warning now
   res.send("Hello World!");
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

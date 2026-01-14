@@ -27,4 +27,22 @@ const createUser = (req, res) => {
     });
 };
 
+const getUser = (req, res) => {
+  const { userId } = req.params;
+
+  User.findById(userId)
+    .then((user) => {
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      return res.json(user);
+    })
+    .catch((err) => {
+      if (err.name === "CastError") {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+      return res.status(500).json({ error: err.message });
+    });
+};
+
 module.exports = { getUsers, createUser };

@@ -7,10 +7,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     validate: {
-      validator: (v) => validator.isURL(v),
+      validator: function (value) {
+        return validator.isURL(value);
+      },
       message: (props) => `${props.value} is not a valid URL!`,
     },
   },
 });
 
-module.exports = mongoose.model("user", userSchema);
+module.exports = mongoose.model("User", userSchema);

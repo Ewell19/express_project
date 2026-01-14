@@ -4,6 +4,10 @@ const mainRoutes = require("./routes/index");
 
 const app = express();
 const { PORT = 3001 } = process.env;
+
+// Middleware to parse JSON bodies
+app.use(express.json());
+
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
   .then(() => {
@@ -18,6 +22,6 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running on port ${PORT}`);
 });

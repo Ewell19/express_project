@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     validate: {
-      validator: function (value) {
+      validator(value) {
         return validator.isURL(value);
       },
       message: (props) => `${props.value} is not a valid URL!`,

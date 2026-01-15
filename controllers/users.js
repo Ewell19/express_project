@@ -1,10 +1,15 @@
 const User = require("../models/user");
+const httpStatusCodes = require("../utils/errors");
 
 // Get all users
 const getUsers = (req, res) => {
   User.find()
     .then((users) => res.send(users))
-    .catch((err) => res.status(500).json({ error: err.message }));
+    .catch((err) =>
+      res
+        .status(httpStatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: err.message }),
+    );
 };
 
 // Get user by ID
@@ -14,12 +19,16 @@ const createUser = (req, res) => {
   const { name, avatar } = req.body;
 
   User.create({ name, avatar })
-    .then((user) => res.status(201).json(user))
+    .then((user) => res.status(httpStatusCodes.CREATED).json(user))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res.status(400).json({ message: err.message });
+        return res
+          .status(httpStatusCodes.BAD_REQUEST)
+          .json({ message: err.message });
       }
-      return res.status(500).json({ message: err.message });
+      return res
+        .status(httpStatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: err.message });
     });
 };
 
@@ -29,15 +38,21 @@ const getUser = (req, res) => {
   User.findById(userId)
     .then((user) => {
       if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        return res
+          .status(httpStatusCodes.NOT_FOUND)
+          .json({ message: "User not found" });
       }
       return res.json(user);
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        return res.status(400).json({ message: "Invalid user ID" });
+        return res
+          .status(httpStatusCodes.BAD_REQUEST)
+          .json({ message: "Invalid user ID" });
       }
-      return res.status(500).json({ message: err.message });
+      return res
+        .status(httpStatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: err.message });
     });
 };
 

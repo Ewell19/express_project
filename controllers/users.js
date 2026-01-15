@@ -8,7 +8,7 @@ const getUsers = (req, res) => {
     .catch((err) =>
       res
         .status(httpStatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ error: err.message }),
+        .json({ message: err.message }),
     );
 };
 

@@ -25,7 +25,7 @@ module.exports = {
     sourceType: "module",
   },
   rules: {
-    "no-console": ["warn", { allow: ["error"] }],
+    "no-console": ["warn", { allow: ["error", "log"] }],
     "no-underscore-dangle": ["error", { allow: ["_id"] }],
   },
 };

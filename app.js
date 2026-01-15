@@ -10,7 +10,7 @@ app.use(express.json());
 
 // Temporary hardcoded user for auth-free requests expected by tests
 app.use((req, res, next) => {
-  req.user = { _id: "5d8b8592978f8bd833ca8133" };
+  req.user = { _id: "6967e5d97092b79cd2e8d44b" };
   next();
 });
 

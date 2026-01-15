@@ -12,6 +12,7 @@ const clothingitemSchema = new mongoose.Schema({
       message: (props) => `${props.value} is not a valid URL!`,
     },
   },
+  owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User", default: [] }],
 });
 

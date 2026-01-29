@@ -5,9 +5,14 @@ const httpStatusCodes = require("../utils/errors");
 
 // Login controller
 const login = (req, res) => {
-  const { email, password } = req.body;
+  const body = req.body || {};
+  const { email, password } = body;
+  const hasEmail = Object.prototype.hasOwnProperty.call(body, "email");
+  const hasPassword = Object.prototype.hasOwnProperty.call(body, "password");
 
   if (
+    !hasEmail ||
+    !hasPassword ||
     typeof email !== "string" ||
     typeof password !== "string" ||
     !email.trim() ||

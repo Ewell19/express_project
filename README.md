@@ -1,6 +1,6 @@
 # WTWR (What to Wear?): Back End
 
-The back-end project is focused on creating a server for the WTWR application. You'll gain a deeper understanding of how to work with databases, set up security and testing, and deploy web applications on a remote machine. The eventual goal is to create a server with an API and user authorization.
+The back-end project is a complete Express API server for the WTWR application, including routes, controllers, models, authentication, and database connectivity. It demonstrates how to work with MongoDB, handle errors, secure routes with JWT, and run automated tests.
 
 ## Features
 
@@ -10,9 +10,18 @@ The back-end project is focused on creating a server for the WTWR application. Y
 - ESLint and Prettier for code quality
 - Centralized HTTP status code constants
 
-## Project 13 video" Link Below"
+## Demo
 
 Loom walkthrough: https://www.loom.com/share/ab8c01bce8f740d68def4a252c846bf3
+
+## Backend Implementation
+
+- Server entry point in `app.js`
+- Routes in `routes/`
+- Controllers in `controllers/`
+- Mongoose models in `models/`
+- Auth middleware in `middlewares/auth.js`
+- Config and shared constants in `utils/`
 
 ## Technologies and Techniques
 
@@ -42,15 +51,19 @@ Loom walkthrough: https://www.loom.com/share/ab8c01bce8f740d68def4a252c846bf3
 
 ## Running the Project
 
-`npm run start` — to launch the server
+`npm run start` — starts the API server (Express) on port 3001.
 
-`npm run dev` — to launch the server with the hot reload feature
+`npm run dev` — starts the server with hot reload (nodemon).
 
-`npm run lint` — to run ESLint checks
+`npm run lint` — runs ESLint checks.
 
 ## Database Setup
 
-Make sure MongoDB is running locally on `mongodb://127.0.0.1:27017/wtwr_db`
+Make sure MongoDB is running locally at `mongodb://127.0.0.1:27017/wtwr_db` before starting the server.
+
+## Error Handling
+
+The API returns consistent error responses with a single `message` field and the correct HTTP status code (400/401/403/404/409/500). Centralized error handling ensures the server never crashes on invalid requests.
 
 ## Project Structure
 
@@ -66,7 +79,7 @@ Make sure MongoDB is running locally on `mongodb://127.0.0.1:27017/wtwr_db`
 
 ## Testing
 
-Before committing your code, make sure you edit the file `sprint.txt` in the root folder. The file `sprint.txt` should contain the number of the sprint you're currently working on. For ex. 12
+Update `sprint.txt` to the current sprint number (13) before running CI checks.
 
 ## Author
 

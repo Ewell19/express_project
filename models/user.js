@@ -50,6 +50,16 @@ userSchema.pre("save", function hashPassword(next) {
 
 // Custom method to find user by credentials
 userSchema.statics.findUserByCredentials = function (email, password) {
+  if (
+    typeof email !== "string" ||
+    typeof password !== "string" ||
+    !email.trim() ||
+    !password.trim()
+  ) {
+    const error = new Error("Email and password are required");
+    error.statusCode = 400;
+    return Promise.reject(error);
+  }
   return this.findOne({ email })
     .select("+password")
     .then((user) => {

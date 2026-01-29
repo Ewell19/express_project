@@ -31,7 +31,14 @@ const login = (req, res) => {
       res.json({ token });
     })
     .catch((err) => {
-      res.status(httpStatusCodes.UNAUTHORIZED).json({ message: err.message });
+      if (err.statusCode === httpStatusCodes.BAD_REQUEST) {
+        return res
+          .status(httpStatusCodes.BAD_REQUEST)
+          .json({ message: err.message });
+      }
+      return res
+        .status(httpStatusCodes.UNAUTHORIZED)
+        .json({ message: err.message });
     });
 };
 

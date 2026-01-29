@@ -7,7 +7,12 @@ const httpStatusCodes = require("../utils/errors");
 const login = (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
+  if (
+    typeof email !== "string" ||
+    typeof password !== "string" ||
+    !email.trim() ||
+    !password.trim()
+  ) {
     return res
       .status(httpStatusCodes.BAD_REQUEST)
       .json({ message: "Email and password are required" });

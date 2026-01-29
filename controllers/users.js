@@ -16,11 +16,16 @@ const getUsers = (req, res) => {
 
 // Create a new user
 const createUser = (req, res) => {
-  const { name, avatar } = req.body;
+  const { name, avatar, email, password } = req.body;
 
-  User.create({ name, avatar })
+  User.create({ name, avatar, email, password })
     .then((user) => res.status(httpStatusCodes.CREATED).json(user))
     .catch((err) => {
+      if (err.code === 11000) {
+        return res
+          .status(httpStatusCodes.CONFLICT)
+          .json({ message: "Email already exists" });
+      }
       if (err.name === "ValidationError") {
         return res
           .status(httpStatusCodes.BAD_REQUEST)

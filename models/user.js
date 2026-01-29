@@ -38,13 +38,12 @@ userSchema.pre("save", function hashPassword(next) {
   if (!this.isModified("password")) {
     return next();
   }
-  bcrypt.hash(this.password, 10, (err, hash) => {
+  return bcrypt.hash(this.password, 10, (err, hash) => {
     if (err) {
-      next(err);
-    } else {
-      this.password = hash;
-      next();
+      return next(err);
     }
+    this.password = hash;
+    return next();
   });
 });
 
@@ -59,13 +58,18 @@ userSchema.statics.findUserByCredentials = function findUserByCredentials(
       if (!user) {
         return Promise.reject(new Error("Incorrect email or password"));
       }
-      return bcrypt.compare(password, user.password).then((isPasswordMatch) => {
-        if (!isPasswordMatch) {
-          return Promise.reject(new Error("Incorrect email or password"));
-        }
-        return user;
-      });
+      return bcrypt
+        .compare(password, user.password)
+        .then((isPasswordMatch) => {
+          if (!isPasswordMatch) {
+            return Promise.reject(
+              new Error("Incorrect email or password"),
+            );
+          }
+          return user;
+        });
     });
+};
 };
 
 module.exports = mongoose.model("User", userSchema);

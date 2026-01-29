@@ -5,25 +5,30 @@ const httpStatusCodes = require("../utils/errors");
 
 // Login controller
 const login = (req, res) => {
-  const body = req.body || {};
-  const { email, password } = body;
-  const hasEmail = Object.prototype.hasOwnProperty.call(body, "email");
-  const hasPassword = Object.prototype.hasOwnProperty.call(body, "password");
+  const { email, password } = req.body;
 
+  // Validate email and password are provided and are non-empty strings
   if (
-    !hasEmail ||
-    !hasPassword ||
+    !email ||
+    !password ||
     typeof email !== "string" ||
-    typeof password !== "string" ||
-    !email.trim() ||
-    !password.trim()
+    typeof password !== "string"
   ) {
     return res
       .status(httpStatusCodes.BAD_REQUEST)
       .json({ message: "Email and password are required" });
   }
 
-  User.findUserByCredentials(email, password)
+  const trimmedEmail = email.trim();
+  const trimmedPassword = password.trim();
+
+  if (!trimmedEmail || !trimmedPassword) {
+    return res
+      .status(httpStatusCodes.BAD_REQUEST)
+      .json({ message: "Email and password are required" });
+  }
+
+  User.findUserByCredentials(trimmedEmail, trimmedPassword)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",

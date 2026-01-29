@@ -8,7 +8,13 @@ const app = express();
 const { PORT = 3001 } = process.env;
 
 // Middleware to parse JSON bodies
-app.use(express.json({ type: ["application/json", "text/plain"] }));
+app.use(express.json());
+app.use((req, res, next) => {
+  if (!req.body) {
+    req.body = {};
+  }
+  next();
+});
 app.use(cors());
 
 // Test user for endpoint testing (will be replaced by real auth in production)

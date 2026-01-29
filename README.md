@@ -10,6 +10,10 @@ The back-end project is focused on creating a server for the WTWR application. Y
 - ESLint and Prettier for code quality
 - Centralized HTTP status code constants
 
+## Demo
+
+Loom walkthrough: https://www.loom.com/share/ab8c01bce8f740d68def4a252c846bf3
+
 ## Technologies and Techniques
 
 - **Node.js** - JavaScript runtime environment

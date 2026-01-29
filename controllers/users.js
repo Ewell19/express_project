@@ -4,6 +4,7 @@ const { JWT_SECRET } = require("../utils/config");
 const httpStatusCodes = require("../utils/errors");
 
 // Login controller
+// eslint-disable-next-line consistent-return
 const login = (req, res) => {
   const { email, password } = req.body;
 

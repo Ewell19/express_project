@@ -13,3 +13,6 @@ node_modules
 .DS_Store
 .idea
 .vscode
+
+# Test framework dist (should be rebuilt on each run)
+se-actions-tests-p/dist/

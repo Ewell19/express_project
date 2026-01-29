@@ -8,7 +8,7 @@ const app = express();
 const { PORT = 3001 } = process.env;
 
 // Middleware to parse JSON bodies
-app.use(express.json({ type: "*/*" }));
+app.use(express.json({ type: ["application/json", "text/plain"] }));
 app.use(cors());
 
 // Test user for endpoint testing (will be replaced by real auth in production)
@@ -25,12 +25,14 @@ mongoose
     console.log("Connected to MongoDB");
     return User.init();
   })
+  .then(() => {
+    console.log("Indexes created");
+    app.use("/", mainRoutes);
+
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  })
   .catch((err) => {
     console.error("Failed to connect to MongoDB", err);
   });
-
-app.use("/", mainRoutes);
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server is running on port ${PORT}`);
-});

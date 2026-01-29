@@ -34,18 +34,13 @@ const userSchema = new mongoose.Schema({
 });
 
 // Hash password before saving
-userSchema.pre("save", function hashPassword(next) {
+userSchema.pre("save", async function hashPassword() {
   const user = this;
   if (!user.isModified("password")) {
-    return next();
+    return;
   }
-  return bcrypt.hash(user.password, 10, (err, hash) => {
-    if (err) {
-      return next(err);
-    }
-    user.password = hash;
-    return next();
-  });
+  const hash = await bcrypt.hash(user.password, 10);
+  user.password = hash;
 });
 
 // Custom method to find user by credentials

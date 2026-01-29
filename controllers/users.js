@@ -27,14 +27,14 @@ const login = (req, res) => {
       .json({ message: "Email and password are required" });
   }
 
-  return User.findUserByCredentials(trimmedEmail, trimmedPassword).then(
-    (user) => {
+  return User.findUserByCredentials(trimmedEmail, trimmedPassword)
+    .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
       return res.status(200).json({ token });
-    },
-    (err) => {
+    })
+    .catch((err) => {
       if (err.statusCode === httpStatusCodes.BAD_REQUEST) {
         return res
           .status(httpStatusCodes.BAD_REQUEST)
@@ -43,8 +43,7 @@ const login = (req, res) => {
       return res
         .status(httpStatusCodes.UNAUTHORIZED)
         .json({ message: err.message });
-    },
-  );
+    });
 };
 
 // Get all users

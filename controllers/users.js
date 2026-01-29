@@ -7,6 +7,13 @@ const httpStatusCodes = require("../utils/errors");
 const login = (req, res) => {
   const { email, password } = req.body;
 
+  User.findUserByCredentials(email, password);
+  if (!email || !password) {
+    return res
+      .status(httpStatusCodes.BAD_REQUEST)
+      .json({ message: "Email and password are required" });
+  }
+
   User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {

@@ -48,7 +48,10 @@ userSchema.pre("save", function (next) {
 });
 
 // Custom method to find user by credentials
-userSchema.statics.findUserByCredentials = function (email, password) {
+userSchema.statics.findUserByCredentials = function findUserByCredentials(
+  email,
+  password,
+) {
   return this.findOne({ email })
     .select("+password")
     .then((user) => {

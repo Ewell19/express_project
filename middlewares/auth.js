@@ -6,9 +6,10 @@ const auth = (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization) {
-    return res
+    res
       .status(httpStatusCodes.UNAUTHORIZED)
       .json({ message: "Authorization required" });
+    return;
   }
 
   const token = authorization.replace("Bearer ", "");
@@ -18,9 +19,7 @@ const auth = (req, res, next) => {
     req.user = payload;
     next();
   } catch (err) {
-    return res
-      .status(httpStatusCodes.UNAUTHORIZED)
-      .json({ message: "Invalid token" });
+    res.status(httpStatusCodes.UNAUTHORIZED).json({ message: "Invalid token" });
   }
 };
 

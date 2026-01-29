@@ -28,12 +28,12 @@ const login = (req, res) => {
       .json({ message: "Email and password are required" });
   }
 
-  User.findUserByCredentials(trimmedEmail, trimmedPassword)
+  return User.findUserByCredentials(trimmedEmail, trimmedPassword)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.status(200).json({ token });
+      return res.status(200).json({ token });
     })
     .catch((err) => {
       if (err.statusCode === httpStatusCodes.BAD_REQUEST) {

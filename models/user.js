@@ -62,16 +62,18 @@ userSchema.statics.findUserByCredentials = function (email, password) {
   }
   return this.findOne({ email })
     .select("+password")
-    .then((user) => {
+    .then(function checkUser(user) {
       if (!user) {
         return Promise.reject(new Error("Incorrect email or password"));
       }
-      return bcrypt.compare(password, user.password).then((isPasswordMatch) => {
-        if (!isPasswordMatch) {
-          return Promise.reject(new Error("Incorrect email or password"));
-        }
-        return user;
-      });
+      return bcrypt
+        .compare(password, user.password)
+        .then(function comparePassword(isPasswordMatch) {
+          if (!isPasswordMatch) {
+            return Promise.reject(new Error("Incorrect email or password"));
+          }
+          return user;
+        });
     });
 };
 

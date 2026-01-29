@@ -95,14 +95,21 @@ const unlikeItem = (req, res) => {
 
 const deleteClothingItem = (req, res) => {
   const { itemId } = req.params;
-  ClothingItem.findByIdAndDelete(itemId)
+  ClothingItem.findById(itemId)
     .then((item) => {
       if (!item) {
         return res
           .status(httpStatusCodes.NOT_FOUND)
           .json({ message: "Clothing item not found" });
       }
-      return res.json({ message: "Clothing item deleted successfully" });
+      if (item.owner.toString() !== req.user._id) {
+        return res.status(httpStatusCodes.FORBIDDEN).json({
+          message: "You do not have permission to delete this item",
+        });
+      }
+      return ClothingItem.findByIdAndDelete(itemId).then(() => {
+        res.json({ message: "Clothing item deleted successfully" });
+      });
     })
     .catch((err) => {
       if (err.name === "CastError") {

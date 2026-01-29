@@ -47,4 +47,21 @@ userSchema.pre("save", function (next) {
   });
 });
 
+// Custom method to find user by credentials
+userSchema.statics.findUserByCredentials = function (email, password) {
+  return this.findOne({ email })
+    .select("+password")
+    .then((user) => {
+      if (!user) {
+        return Promise.reject(new Error("Incorrect email or password"));
+      }
+      return bcrypt.compare(password, user.password).then((isPasswordMatch) => {
+        if (!isPasswordMatch) {
+          return Promise.reject(new Error("Incorrect email or password"));
+        }
+        return user;
+      });
+    });
+};
+
 module.exports = mongoose.model("User", userSchema);

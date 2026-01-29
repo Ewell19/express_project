@@ -1,5 +1,23 @@
+const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const { JWT_SECRET } = require("../utils/config");
 const httpStatusCodes = require("../utils/errors");
+
+// Login controller
+const login = (req, res) => {
+  const { email, password } = req.body;
+
+  User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
+      res.json({ token });
+    })
+    .catch((err) => {
+      res.status(httpStatusCodes.UNAUTHORIZED).json({ message: err.message });
+    });
+};
 
 // Get all users
 const getUsers = (req, res) => {
@@ -12,14 +30,16 @@ const getUsers = (req, res) => {
     );
 };
 
-// Get user by ID
-
 // Create a new user
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
   User.create({ name, avatar, email, password })
-    .then((user) => res.status(httpStatusCodes.CREATED).json(user))
+    .then((user) => {
+      const userObj = user.toObject();
+      delete userObj.password;
+      res.status(httpStatusCodes.CREATED).json(userObj);
+    })
     .catch((err) => {
       if (err.code === 11000) {
         return res
@@ -37,10 +57,9 @@ const createUser = (req, res) => {
     });
 };
 
-const getUser = (req, res) => {
-  const { userId } = req.params;
-
-  User.findById(userId)
+// Get current user
+const getCurrentUser = (req, res) => {
+  User.findById(req.user._id)
     .then((user) => {
       if (!user) {
         return res
@@ -61,4 +80,39 @@ const getUser = (req, res) => {
     });
 };
 
-module.exports = { getUsers, createUser, getUser };
+// Update current user
+const updateUser = (req, res) => {
+  const { name, avatar } = req.body;
+  const userId = req.user._id;
+
+  User.findByIdAndUpdate(
+    userId,
+    { name, avatar },
+    { new: true, runValidators: true },
+  )
+    .then((user) => {
+      if (!user) {
+        return res
+          .status(httpStatusCodes.NOT_FOUND)
+          .json({ message: "User not found" });
+      }
+      return res.json(user);
+    })
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        return res
+          .status(httpStatusCodes.BAD_REQUEST)
+          .json({ message: err.message });
+      }
+      if (err.name === "CastError") {
+        return res
+          .status(httpStatusCodes.BAD_REQUEST)
+          .json({ message: "Invalid user ID" });
+      }
+      return res
+        .status(httpStatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: err.message });
+    });
+};
+
+module.exports = { login, getUsers, createUser, getCurrentUser, updateUser };

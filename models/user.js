@@ -49,7 +49,10 @@ userSchema.pre("save", function hashPassword(next) {
 });
 
 // Custom method to find user by credentials
-userSchema.statics.findUserByCredentials = function (email, password) {
+userSchema.statics.findUserByCredentials = function findUserByCredentials(
+  email,
+  password,
+) {
   if (
     typeof email !== "string" ||
     typeof password !== "string" ||
@@ -62,18 +65,16 @@ userSchema.statics.findUserByCredentials = function (email, password) {
   }
   return this.findOne({ email })
     .select("+password")
-    .then(function checkUser(user) {
+    .then((user) => {
       if (!user) {
         return Promise.reject(new Error("Incorrect email or password"));
       }
-      return bcrypt
-        .compare(password, user.password)
-        .then(function comparePassword(isPasswordMatch) {
-          if (!isPasswordMatch) {
-            return Promise.reject(new Error("Incorrect email or password"));
-          }
-          return user;
-        });
+      return bcrypt.compare(password, user.password).then((isPasswordMatch) => {
+        if (!isPasswordMatch) {
+          return Promise.reject(new Error("Incorrect email or password"));
+        }
+        return user;
+      });
     });
 };
 

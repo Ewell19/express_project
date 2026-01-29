@@ -7,7 +7,6 @@ const httpStatusCodes = require("../utils/errors");
 const login = (req, res) => {
   const { email, password } = req.body;
 
-  User.findUserByCredentials(email, password);
   if (!email || !password) {
     return res
       .status(httpStatusCodes.BAD_REQUEST)

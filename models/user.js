@@ -49,7 +49,7 @@ userSchema.pre("save", function hashPassword(next) {
 });
 
 // Custom method to find user by credentials
-userSchema.statics.findUserByCredentials = function findUserByCredentials(
+userSchema.statics.findUserByCredentials = async function findUserByCredentials(
   email,
   password,
 ) {
@@ -61,21 +61,22 @@ userSchema.statics.findUserByCredentials = function findUserByCredentials(
   ) {
     const error = new Error("Email and password are required");
     error.statusCode = 400;
-    return Promise.reject(error);
+    throw error;
   }
-  return this.findOne({ email })
-    .select("+password")
-    .then((user) => {
-      if (!user) {
-        return Promise.reject(new Error("Incorrect email or password"));
-      }
-      return bcrypt.compare(password, user.password).then((isPasswordMatch) => {
-        if (!isPasswordMatch) {
-          return Promise.reject(new Error("Incorrect email or password"));
-        }
-        return user;
-      });
-    });
+
+  const user = await this.findOne({ email }).select("+password");
+
+  if (!user) {
+    throw new Error("Incorrect email or password");
+  }
+
+  const isPasswordMatch = await bcrypt.compare(password, user.password);
+
+  if (!isPasswordMatch) {
+    throw new Error("Incorrect email or password");
+  }
+
+  return user;
 };
 
 module.exports = mongoose.model("User", userSchema);

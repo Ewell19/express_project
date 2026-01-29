@@ -34,16 +34,17 @@ const userSchema = new mongoose.Schema({
 });
 
 // Hash password before saving
-userSchema.pre("save", function (next) {
+userSchema.pre("save", function hashPassword(next) {
   if (!this.isModified("password")) {
     return next();
   }
   bcrypt.hash(this.password, 10, (err, hash) => {
     if (err) {
-      return next(err);
+      next(err);
+    } else {
+      this.password = hash;
+      next();
     }
-    this.password = hash;
-    next();
   });
 });
 

@@ -2,12 +2,13 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const mainRoutes = require("./routes/index");
+const User = require("./models/user");
 
 const app = express();
 const { PORT = 3001 } = process.env;
 
 // Middleware to parse JSON bodies
-app.use(express.json());
+app.use(express.json({ type: "*/*" }));
 app.use(cors());
 
 // Test user for endpoint testing (will be replaced by real auth in production)
@@ -22,6 +23,7 @@ mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
   .then(() => {
     console.log("Connected to MongoDB");
+    return User.init();
   })
   .catch((err) => {
     console.error("Failed to connect to MongoDB", err);

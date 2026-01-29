@@ -28,7 +28,7 @@ const login = (req, res) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.json({ token });
+      res.status(200).json({ token });
     })
     .catch((err) => {
       if (err.statusCode === httpStatusCodes.BAD_REQUEST) {

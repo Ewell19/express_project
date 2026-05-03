@@ -1,9 +1,16 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
+const UnauthorizedError = require("../errors/unauthorized-error");
+const BadRequestError = require("../errors/bad-request-error");
 
 const userSchema = new mongoose.Schema({
-  name: { type: String, required: true, minlength: 2, maxlength: 30 },
+  name: {
+    type: String,
+    required: true,
+    minlength: 2,
+    maxlength: 30,
+  },
   avatar: {
     type: String,
     required: true,
@@ -11,7 +18,7 @@ const userSchema = new mongoose.Schema({
       validator(value) {
         return validator.isURL(value);
       },
-      message: (props) => `${props.value} is not a valid URL!`,
+      message: "Invalid avatar URL",
     },
   },
   email: {
@@ -22,60 +29,38 @@ const userSchema = new mongoose.Schema({
       validator(value) {
         return validator.isEmail(value);
       },
-      message: (props) => `${props.value} is not a valid email!`,
+      message: "Invalid email",
     },
   },
   password: {
     type: String,
     required: true,
-    minlength: 8,
     select: false,
   },
 });
 
-// Hash password before saving
-userSchema.pre("save", async function hashPassword() {
-  const user = this;
-  if (!user.isModified("password")) {
-    return;
-  }
-  const hash = await bcrypt.hash(user.password, 10);
-  user.password = hash;
-});
-
-// Custom method to find user by credentials
 userSchema.statics.findUserByCredentials = function findUserByCredentials(
   email,
   password,
 ) {
-  if (
-    typeof email !== "string" ||
-    typeof password !== "string" ||
-    !email.trim() ||
-    !password.trim()
-  ) {
-    const error = new Error("Email and password are required");
-    error.statusCode = 400;
-    return Promise.reject(error);
+  if (!email || !password) {
+    return Promise.reject(new BadRequestError("Email and password are required"));
   }
 
   return this.findOne({ email })
     .select("+password")
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error("Incorrect email or password"));
+        throw new UnauthorizedError("Incorrect email or password");
       }
-      return (
-        bcrypt
-          .compare(password, user.password)
-          // eslint-disable-next-line prefer-arrow-callback
-          .then(function checkPassword(isPasswordMatch) {
-            if (!isPasswordMatch) {
-              return Promise.reject(new Error("Incorrect email or password"));
-            }
-            return user;
-          })
-      );
+
+      return bcrypt.compare(password, user.password).then((matched) => {
+        if (!matched) {
+          throw new UnauthorizedError("Incorrect email or password");
+        }
+
+        return user;
+      });
     });
 };
 

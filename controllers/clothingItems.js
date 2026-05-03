@@ -1,132 +1,109 @@
 const ClothingItem = require("../models/clothingItem");
-const httpStatusCodes = require("../utils/errors");
+const BadRequestError = require("../errors/bad-request-error");
+const ForbiddenError = require("../errors/forbidden-error");
+const NotFoundError = require("../errors/not-found-error");
 
-// Get all clothing items
-const getClothingItems = (req, res) => {
-  ClothingItem.find()
+const getClothingItems = (req, res, next) => {
+  ClothingItem.find({})
     .then((items) => res.json(items))
-    .catch((err) =>
-      res
-        .status(httpStatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ message: err.message }),
-    );
+    .catch((err) => next(err));
 };
 
-// Create a new clothing item
-const createClothingItem = (req, res) => {
+const createClothingItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
-  const owner = req.user._id;
 
-  ClothingItem.create({ name, weather, imageUrl, owner })
-    .then((item) => res.status(httpStatusCodes.CREATED).json(item))
+  ClothingItem.create({
+    name,
+    weather,
+    imageUrl,
+    owner: req.user._id,
+  })
+    .then((item) => res.status(201).json(item))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res
-          .status(httpStatusCodes.BAD_REQUEST)
-          .json({ message: err.message });
+        next(new BadRequestError("Invalid item data"));
+        return;
       }
-      return res
-        .status(httpStatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ message: err.message });
+
+      next(err);
     });
 };
 
-// Like an item
-const likeItem = (req, res) => {
-  const { itemId } = req.params;
-  // Use mock user ID for testing (req.user._id would come from auth middleware later)
-  const userId = req.user?._id || "507f1f77bcf86cd799439011";
-
-  ClothingItem.findByIdAndUpdate(
-    itemId,
-    { $addToSet: { likes: userId } },
-    { new: true },
-  )
+const deleteClothingItem = (req, res, next) => {
+  ClothingItem.findById(req.params.id)
     .then((item) => {
       if (!item) {
-        return res
-          .status(httpStatusCodes.NOT_FOUND)
-          .json({ message: "Item not found" });
+        throw new NotFoundError("Item not found");
       }
-      return res.json(item);
-    })
-    .catch((err) => {
-      if (err.name === "CastError") {
-        return res
-          .status(httpStatusCodes.BAD_REQUEST)
-          .json({ message: "Invalid item ID" });
-      }
-      return res
-        .status(httpStatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ message: err.message });
-    });
-};
 
-// Unlike an item
-const unlikeItem = (req, res) => {
-  const { itemId } = req.params;
-  // Use mock user ID for testing
-  const userId = req.user?._id || "507f1f77bcf86cd799439011";
-
-  ClothingItem.findByIdAndUpdate(
-    itemId,
-    { $pull: { likes: userId } },
-    { new: true },
-  )
-    .then((item) => {
-      if (!item) {
-        return res
-          .status(httpStatusCodes.NOT_FOUND)
-          .json({ message: "Item not found" });
-      }
-      return res.json(item);
-    })
-    .catch((err) => {
-      if (err.name === "CastError") {
-        return res
-          .status(httpStatusCodes.BAD_REQUEST)
-          .json({ message: "Invalid item ID" });
-      }
-      return res
-        .status(httpStatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ message: err.message });
-    });
-};
-
-const deleteClothingItem = (req, res) => {
-  const { itemId } = req.params;
-  ClothingItem.findById(itemId)
-    .then((item) => {
-      if (!item) {
-        return res
-          .status(httpStatusCodes.NOT_FOUND)
-          .json({ message: "Clothing item not found" });
-      }
       if (item.owner.toString() !== req.user._id) {
-        return res.status(httpStatusCodes.FORBIDDEN).json({
-          message: "You do not have permission to delete this item",
-        });
+        throw new ForbiddenError("You cannot delete another user's item");
       }
-      return ClothingItem.findByIdAndDelete(itemId).then(() => {
+
+      return ClothingItem.findByIdAndDelete(req.params.id).then(() => {
         res.json({ message: "Clothing item deleted successfully" });
       });
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        return res
-          .status(httpStatusCodes.BAD_REQUEST)
-          .json({ message: "Invalid item ID" });
+        next(new BadRequestError("Invalid item ID"));
+        return;
       }
-      return res
-        .status(httpStatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ message: err.message });
+
+      next(err);
+    });
+};
+
+const likeItem = (req, res, next) => {
+  ClothingItem.findByIdAndUpdate(
+    req.params.id,
+    { $addToSet: { likes: req.user._id } },
+    { new: true },
+  )
+    .then((item) => {
+      if (!item) {
+        throw new NotFoundError("Item not found");
+      }
+
+      res.json(item);
+    })
+    .catch((err) => {
+      if (err.name === "CastError") {
+        next(new BadRequestError("Invalid item ID"));
+        return;
+      }
+
+      next(err);
+    });
+};
+
+const unlikeItem = (req, res, next) => {
+  ClothingItem.findByIdAndUpdate(
+    req.params.id,
+    { $pull: { likes: req.user._id } },
+    { new: true },
+  )
+    .then((item) => {
+      if (!item) {
+        throw new NotFoundError("Item not found");
+      }
+
+      res.json(item);
+    })
+    .catch((err) => {
+      if (err.name === "CastError") {
+        next(new BadRequestError("Invalid item ID"));
+        return;
+      }
+
+      next(err);
     });
 };
 
 module.exports = {
   getClothingItems,
   createClothingItem,
+  deleteClothingItem,
   likeItem,
   unlikeItem,
-  deleteClothingItem,
 };

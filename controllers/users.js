@@ -1,146 +1,113 @@
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
-const httpStatusCodes = require("../utils/errors");
+const BadRequestError = require("../errors/bad-request-error");
+const ConflictError = require("../errors/conflict-error");
+const NotFoundError = require("../errors/not-found-error");
 
-// Login controller
-// eslint-disable-next-line consistent-return
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
 
-  if (
-    !email ||
-    !password ||
-    typeof email !== "string" ||
-    typeof password !== "string"
-  ) {
-    return res
-      .status(httpStatusCodes.BAD_REQUEST)
-      .json({ message: "Email and password are required" });
-  }
-
-  const trimmedEmail = email.trim();
-  const trimmedPassword = password.trim();
-
-  if (!trimmedEmail || !trimmedPassword) {
-    return res
-      .status(httpStatusCodes.BAD_REQUEST)
-      .json({ message: "Email and password are required" });
-  }
-
-  return User.findUserByCredentials(trimmedEmail, trimmedPassword)
+  User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      return res.status(200).json({ token });
+
+      res.json({ token });
     })
-    .catch((err) => {
-      if (err.statusCode === httpStatusCodes.BAD_REQUEST) {
-        return res
-          .status(httpStatusCodes.BAD_REQUEST)
-          .json({ message: err.message });
-      }
-      return res
-        .status(httpStatusCodes.UNAUTHORIZED)
-        .json({ message: err.message });
-    });
+    .catch((err) => next(err));
 };
 
-// Get all users
-const getUsers = (req, res) => {
-  User.find()
-    .then((users) => res.send(users))
-    .catch((err) =>
-      res
-        .status(httpStatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ message: err.message }),
-    );
-};
+const createUser = (req, res, next) => {
+  const {
+    name,
+    avatar,
+    email,
+    password,
+  } = req.body;
 
-// Create a new user
-const createUser = (req, res) => {
-  const { name, avatar, email, password } = req.body;
-
-  User.create({ name, avatar, email, password })
+  bcrypt
+    .hash(password, 10)
+    .then((hash) => User.create({
+      name,
+      avatar,
+      email,
+      password: hash,
+    }))
     .then((user) => {
-      const userObj = user.toObject();
-      delete userObj.password;
-      res.status(httpStatusCodes.CREATED).json(userObj);
+      const userData = user.toObject();
+      delete userData.password;
+      res.status(201).json(userData);
     })
     .catch((err) => {
       if (err.code === 11000) {
-        return res
-          .status(httpStatusCodes.CONFLICT)
-          .json({ message: "Email already exists" });
+        next(new ConflictError("Email already exists"));
+        return;
       }
+
       if (err.name === "ValidationError") {
-        return res
-          .status(httpStatusCodes.BAD_REQUEST)
-          .json({ message: err.message });
+        next(new BadRequestError("Invalid user data"));
+        return;
       }
-      return res
-        .status(httpStatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ message: err.message });
+
+      next(err);
     });
 };
 
-// Get current user
-const getCurrentUser = (req, res) => {
+const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        return res
-          .status(httpStatusCodes.NOT_FOUND)
-          .json({ message: "User not found" });
+        throw new NotFoundError("User not found");
       }
-      return res.json(user);
+
+      res.json(user);
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        return res
-          .status(httpStatusCodes.BAD_REQUEST)
-          .json({ message: "Invalid user ID" });
+        next(new BadRequestError("Invalid user ID"));
+        return;
       }
-      return res
-        .status(httpStatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ message: err.message });
+
+      next(err);
     });
 };
 
-// Update current user
-const updateUser = (req, res) => {
+const updateUser = (req, res, next) => {
   const { name, avatar } = req.body;
-  const userId = req.user._id;
 
   User.findByIdAndUpdate(
-    userId,
+    req.user._id,
     { name, avatar },
     { new: true, runValidators: true },
   )
     .then((user) => {
       if (!user) {
-        return res
-          .status(httpStatusCodes.NOT_FOUND)
-          .json({ message: "User not found" });
+        throw new NotFoundError("User not found");
       }
-      return res.json(user);
+
+      res.json(user);
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res
-          .status(httpStatusCodes.BAD_REQUEST)
-          .json({ message: err.message });
+        next(new BadRequestError("Invalid user data"));
+        return;
       }
+
       if (err.name === "CastError") {
-        return res
-          .status(httpStatusCodes.BAD_REQUEST)
-          .json({ message: "Invalid user ID" });
+        next(new BadRequestError("Invalid user ID"));
+        return;
       }
-      return res
-        .status(httpStatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ message: err.message });
+
+      next(err);
     });
 };
 
-module.exports = { login, getUsers, createUser, getCurrentUser, updateUser };
+module.exports = {
+  login,
+  createUser,
+  getCurrentUser,
+  updateUser,
+};

@@ -2,6 +2,12 @@
 
 This project is the backend for the WTWR application. It provides authentication, user profile management, and clothing item CRUD/likes APIs, backed by MongoDB and secured with JWT.
 
+## Project Walkthrough
+
+A full video walkthrough of the project architecture, deployment process, and key implementation details is available here:
+
+[Watch the Project Walkthrough on Loom](https://www.loom.com/share/f5e75b4e7ca44b45b31ffc16aa0fbfdc)
+
 ## Functionality
 
 - User registration and login (`/signup`, `/signin`)

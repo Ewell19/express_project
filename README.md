@@ -26,6 +26,7 @@ This project is the backend for the WTWR application. It provides authentication
 - Frontend: https://wtwr.barabesta.is
 - Frontend (www): https://www.wtwr.barabesta.is
 - Backend API: https://api.wtwr.barabesta.is
+- Frontend GitHub Repo: https://github.com/Ewell19/se_project_react_fixed
 
 ## Scripts
 

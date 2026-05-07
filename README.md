@@ -6,7 +6,7 @@ This project is the backend for the WTWR application. It provides authentication
 
 A full video walkthrough of the project architecture, deployment process, and key implementation details is available here:
 
-[Watch the Project Walkthrough on Loom](https://www.loom.com/share/f5e75b4e7ca44b45b31ffc16aa0fbfdc)
+[Watch the Project Walkthrough on Loom](https://www.loom.com/share/b5f22c6d502a4be093baf2c3584679d6)
 
 ## Functionality
 

@@ -6,15 +6,12 @@ module.exports = {
 
   // Add the necessary extensions.
   extends: ["eslint:recommended", "airbnb-base", "prettier"],
-  globals: {
-    module: "readonly",
-  },
   overrides: [
     {
       env: {
         node: true,
       },
-      files: [".eslintrc.{js,cjs}", "eslint.config.mjs"],
+      files: [".eslintrc.{js,cjs}"],
       parserOptions: {
         sourceType: "script",
       },
@@ -22,7 +19,7 @@ module.exports = {
   ],
   parserOptions: {
     ecmaVersion: "latest",
-    sourceType: "module",
+    sourceType: "script",
   },
   rules: {
     "no-console": ["warn", { allow: ["error", "log"] }],

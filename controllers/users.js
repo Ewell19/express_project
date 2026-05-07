@@ -5,6 +5,7 @@ const { JWT_SECRET } = require("../utils/config");
 const BadRequestError = require("../errors/bad-request-error");
 const ConflictError = require("../errors/conflict-error");
 const NotFoundError = require("../errors/not-found-error");
+const UnauthorizedError = require("../errors/unauthorized-error");
 
 const login = (req, res, next) => {
   const { email, password } = req.body;
@@ -17,7 +18,14 @@ const login = (req, res, next) => {
 
       res.json({ token });
     })
-    .catch((err) => next(err));
+    .catch((err) => {
+      if (err.message === "Incorrect email or password") {
+        next(new UnauthorizedError("Incorrect email or password"));
+        return;
+      }
+
+      next(err);
+    });
 };
 
 const createUser = (req, res, next) => {

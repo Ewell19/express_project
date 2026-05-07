@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "lint": "eslint ."
+    "lint": "node ./node_modules/eslint/bin/eslint.js ."
   },
   "keywords": [],
   "author": "Adam Ewell",
@@ -18,7 +18,9 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.5.1",
     "express-winston": "^4.2.0",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.21.0",
     "validator": "^13.15.26",
